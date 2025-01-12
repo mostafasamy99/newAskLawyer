@@ -112,7 +112,15 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/get-all-hire-service-requests/{id}', 'getDataOfSingleLawyerRequestsService');
             Route::get('/get-all-price-list-service-requests', 'getMultipleLawyerRequestsService');
             Route::get('/get-all-price-list-service-requests/{id}', 'getDataOfMultipleLawyerRequestsService');
+            
 
+        });
+    });
+
+    Route::controller(AllServiceRequestController::class)->group(function () {
+        Route::prefix('user')->group(function () {
+            Route::get('/platform-services', 'getAllPlatfromServices');
+            Route::get('/platform-services/{id}/lawyers', 'getLawyersWithOffers');
         });
     });
 

@@ -42,7 +42,7 @@ class RequestController  extends Controller
         if ($request->lawyer_id) {
             $validated['lawyer_id'] = [$request->lawyer_id];
             $userRequest = UserRequest::create($validated);
-            $notificationService->sendNotificationToLawyer($userRequest, $request->lawyer_id);
+            // $notificationService->sendNotificationToLawyer($userRequest, $request->lawyer_id);
         } else {
             // Get top 10 lawyer IDs
             $topLawyers = Lawyer::orderBy('rate', 'desc')->take(10)->pluck('id')->toArray();
@@ -53,9 +53,9 @@ class RequestController  extends Controller
             $userRequest = UserRequest::create($validated);
     
             // Notify each lawyer
-            foreach ($topLawyers as $lawyerId) {
-                $notificationService->sendNotificationToLawyer($userRequest, $lawyerId);
-            }
+            // foreach ($topLawyers as $lawyerId) {
+            //     $notificationService->sendNotificationToLawyer($userRequest, $lawyerId);
+            // }
         }
     
         return response()->json([

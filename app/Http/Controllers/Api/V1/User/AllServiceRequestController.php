@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\Request as RequestModel;
-use App\Models\Lawyer;
+use App\Models\PlatformService;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\DB;
 
@@ -124,5 +124,71 @@ class AllServiceRequestController  extends Controller
             'data' => $requestData,
         ]);
     }
+
+
+
+    public function getLawyersWithOffers($id)
+    {
+        $platformService = PlatformService::with('translations')->find($id);
     
+        if (!$platformService) {
+            return response()->json(['message' => 'Platform service not found.'], 404);
+        }
+    
+        $perPage = request()->query('per_page', 10);
+    
+        $lawyers = $platformService->lawyerAcceptedServices()
+            ->with('lawyer')
+            ->where('is_active', 1)
+            ->paginate($perPage)
+            ->through(function ($service) use ($platformService) {
+                return [
+                    'lawyer_id' => $service->lawyer_id,
+                    'lawyer_name' => $service->lawyer->name,
+                    'lawyer_email' => $service->lawyer->email,
+                    'lawyer_rate' => $service->lawyer->rate,
+                    'lawyer_img' => $service->lawyer->img ? url($service->lawyer->img) : null,
+                    'offer_price' => $service->price,
+                    'offer_status' => $service->is_active ? 'Active' : 'Inactive',
+                ];
+            });
+    
+        $translations = $platformService->translations->mapWithKeys(function ($translation) {
+            return [
+                $translation->locale => [
+                    'name' => $translation->name,
+                    'description' => $translation->description,
+                ],
+            ];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Lawyers offers retrieved successfully.',
+            'data' => [
+                'platform_service' => [
+                    'translations' => $translations,
+                    'price' => $platformService->price,  
+                    'icon' => $platformService->icon? url($platformService->icon) : null,  
+                ],
+                'lawyers' => $lawyers,  
+            ],
+        ]);
+    }
+    
+  
+    public function getAllPlatfromServices(Request $request)
+    {
+        $perPage = $request->input('per_page', 5); 
+
+        $platformServices = PlatformService::orderBy('created_at', 'desc') 
+            ->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Platform services retrieved successfully.',
+            'data' => $platformServices
+        ]);
+    }
+
 }
