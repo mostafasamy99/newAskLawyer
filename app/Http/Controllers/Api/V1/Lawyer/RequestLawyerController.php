@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class RequestLawyerController  extends Controller
 {
+    protected $notificationService; 
     public function getUserRequestsByType(Request $request)
     {
         $lawyer = auth()->guard('lawyer')->user(); 
@@ -34,7 +35,7 @@ class RequestLawyerController  extends Controller
 
         $userRequests = UserRequest::where('type', $type)
             ->whereJsonContains('lawyer_id', $lawyer->id)
-            ->select('user_id', 'name', 'email', 'mobile', 'message', 'created_at', 'status')
+            ->select('id','user_id', 'name', 'email', 'mobile', 'message', 'created_at', 'status')
             ->paginate($perPage, ['*'], 'page', $page); 
         if ($userRequests->isEmpty()) {
             return response()->json([
@@ -113,7 +114,7 @@ class RequestLawyerController  extends Controller
                 'accepted_by' => $lawyer->id,
             ]);
 
-            $this->sendRequestAcceptedNotificationToUser($userRequest);
+            $this->notificationService->sendRequestAcceptedNotificationToUser($userRequest);
 
             return response()->json([
                 'success' => true,

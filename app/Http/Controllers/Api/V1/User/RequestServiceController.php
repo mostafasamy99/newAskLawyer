@@ -28,7 +28,7 @@ class RequestServiceController  extends Controller
                 'email' => 'required|email',
                 'message' => 'required|string',
                 'summary' => 'required|string',
-                'service_id' => 'required|exists:platform_services,id',
+                'service_id' => 'nullable|exists:platform_services,id',
                 'files' => 'nullable|array',
                 'files.*' => 'file|mimes:jpeg,png,jpg,pdf,docx,xlsx,txt|max:5000',
                 'lawyer_id' => 'nullable|exists:lawyers,id',
