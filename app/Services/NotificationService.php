@@ -67,7 +67,6 @@ class NotificationService
 
     public function sendRequestAcceptedNotificationToUser(UserRequest $userRequest)
     {
-        // Retrieve the user who made the request
         $user = User::findOrFail($userRequest->user_id);
         
         $title = 'Request Accepted';
@@ -76,7 +75,34 @@ class NotificationService
         RequestNotification::create([
             'user_request_id' => $userRequest->id,
             'user_request_type' => get_class($userRequest),
-            'sender_id' => $userRequest->accepted_by,  // The lawyer who accepted the request
+            'sender_id' => $userRequest->accepted_by, 
+            'sender_type' => 'App\Models\Lawyer',
+            'receiver_id' => $user->id,
+            'receiver_type' => 'App\Models\User',
+            'title' => $title,
+            'body' => $body,
+        ]);
+
+        if ($user->fcm_token) {
+            app('App\Services\FirebaseService')->sendNotification(
+                $user->fcm_token,
+                $title,
+                $body
+            );
+        }
+    }
+
+    public function sendServiceRequestAcceptedNotificationToUser(RequestModel $userRequest)
+    {
+        $user = User::findOrFail($userRequest->user_id);
+        
+        $title = 'Request Accepted';
+        $body = "Your request has been accepted by a lawyer. You can now proceed with the next steps.";
+
+        RequestNotification::create([
+            'user_request_id' => $userRequest->id,
+            'user_request_type' => get_class($userRequest),
+            'sender_id' => $userRequest->accepted_by,  
             'sender_type' => 'App\Models\Lawyer',
             'receiver_id' => $user->id,
             'receiver_type' => 'App\Models\User',

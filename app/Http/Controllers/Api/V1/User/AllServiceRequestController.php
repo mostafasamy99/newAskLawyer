@@ -4,13 +4,10 @@ namespace App\Http\Controllers\Api\V1\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\Request as RequestModel;
 use App\Models\PlatformService;
 use App\Services\NotificationService;
-use Illuminate\Support\Facades\DB;
 
 class AllServiceRequestController  extends Controller
 {

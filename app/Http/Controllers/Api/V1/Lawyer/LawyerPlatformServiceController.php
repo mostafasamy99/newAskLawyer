@@ -11,21 +11,32 @@ use App\Models\Lawyer;
 
 class LawyerPlatformServiceController  extends Controller
 {
-    public function getPlatformServices()
+    public function getPlatformServices(Request $request)
     {
         $lawyer = auth()->guard('lawyer')->user();
         if (!$lawyer) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
         }
-
+    
         $lawyer->load('legal_fields');
         $legalFieldIds = $lawyer->legal_fields->pluck('id');
-
-        $platformServices = PlatformService::whereIn('legal_field_id', $legalFieldIds)->get();
-
-        return response()->json($platformServices);
+    
+        $perPage = $request->input('per_page', 10); 
+        $page = $request->input('page', 1); 
+    
+        $platformServices = PlatformService::whereIn('legal_field_id', $legalFieldIds)
+            ->paginate($perPage, ['*'], 'page', $page);
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Services retrieved successfully',
+            'data' => $platformServices,
+        ], 200);
     }
-
+    
 
     public function addService(Request $request)
     {
@@ -84,14 +95,17 @@ class LawyerPlatformServiceController  extends Controller
     }
     
 
-    public function getAcceptedServices()
+    public function getAcceptedServices(Request $request)
     {
         $lawyer = auth()->guard('lawyer')->user();
 
         try {
+            $perPage = $request->input('per_page', 10); 
+            $page = $request->input('page', 1); 
+
             $services = LawyerAcceptedService::where('lawyer_id', $lawyer->id)
                 ->with(['platformService.translations'])
-                ->get()
+                ->paginate($perPage, ['*'], 'page', $page)
                 ->map(function ($service) {
                     return [
                         'platform_service_id' => $service->platform_service_id,
@@ -118,6 +132,14 @@ class LawyerPlatformServiceController  extends Controller
                 'status' => 'success',
                 'message' => 'Accepted services retrieved successfully.',
                 'data' => $services,
+                'pagination' => [
+                    'total' => $services->total(),
+                    'per_page' => $services->perPage(),
+                    'current_page' => $services->currentPage(),
+                    'last_page' => $services->lastPage(),
+                    'next_page_url' => $services->nextPageUrl(),
+                    'prev_page_url' => $services->previousPageUrl(),
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -127,6 +149,7 @@ class LawyerPlatformServiceController  extends Controller
             ], 500);
         }
     }
+
 
         
 

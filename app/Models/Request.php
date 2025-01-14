@@ -8,7 +8,7 @@ use Carbon\Carbon;
 class Request extends Model
 {
     protected $table = 'requests';
-	protected $fillable = ['username', 'first_name', 'last_name', 'title', 'mobile', 'email', 'message','summary','status', 'files', 'request_id', 'service_id', 'user_id', 'lawyer_id', 'country_id', 'blog_id', 'is_read', 'fixed_service_price'];
+	protected $fillable = ['username', 'first_name', 'last_name', 'title', 'mobile', 'email', 'message','summary','status','accepted_by', 'files', 'request_id', 'service_id', 'user_id', 'lawyer_id', 'country_id', 'blog_id', 'is_read', 'fixed_service_price'];
     public $timestamps = true;
 
 	public function scopeActive($query){
@@ -68,7 +68,7 @@ class Request extends Model
 
 	public function service()
 	{
-		return $this->belongsTo(Service::class, 'service_id');
+		return $this->belongsTo(PlatformService::class, 'service_id');
 	}
 
 	public function country()

@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\V1\Lawyer\RequestLawyerController;
 use App\Http\Controllers\Api\V1\Lawyer\LawyerProfileController;
 use App\Http\Controllers\Api\V1\Lawyer\NotificationLawyerController;
 use App\Http\Controllers\Api\V1\Lawyer\LawyerPlatformServiceController;
+use App\Http\Controllers\Api\V1\Lawyer\ServicesRequestLawyerController;
+
 
 
 /*
@@ -158,6 +160,19 @@ Route::controller(RequestLawyerController::class)->group(function () {
         Route::post('accept-request/{id}','acceptRequest');
         // Route::post('cancel-request/{id}','cancelRequest');
         Route::post('complete-request/{id}','completeRequest');
+    });
+});
+
+Route::controller(ServicesRequestLawyerController::class)->group(function () {
+    Route::prefix('lawyer')->group(function () {
+        Route::get('price-list-requests', 'getPriceListServicesRequestsWithoutServiceId');
+        Route::get('price-list-request/{id}', 'getPriceListServiceRequestById');
+        Route::post('accept-price-list-request/{id}','acceptPriceListRequest');
+        Route::post('complete-price-list-request/{id}','completePriceListRequest');
+        Route::get('hire-employee-requests', 'getHireEmployeeServicesRequestsWithoutServiceId');
+        Route::get('hire-employee-request/{id}', 'getHireEmployeeServiceRequestById');
+        Route::post('accept-hire-request/{id}','acceptHireRequest');
+        Route::post('complete-hire-request/{id}','completeHireRequest');
     });
 });
 

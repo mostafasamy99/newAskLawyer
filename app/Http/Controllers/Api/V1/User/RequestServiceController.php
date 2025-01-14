@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1\User;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request as Request2;
+use Illuminate\Http\Request as RequestModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use App\Models\Request;
@@ -12,9 +12,7 @@ use App\Services\NotificationService;
 
 class RequestServiceController  extends Controller
 {
-
-    
-    public function saveRequest(Request2 $request, NotificationService $notificationService)
+    public function saveRequest(RequestModel $request, NotificationService $notificationService)
     {
         $user = auth()->user();
     
@@ -44,7 +42,7 @@ class RequestServiceController  extends Controller
         $validated['user_id'] = $user->id;
     
         if ($request->lawyer_id) {
-            $validated['lawyer_id'] = json_encode([$request->lawyer_id]); 
+            $validated['lawyer_id'] = [(int)$request->lawyer_id];
         } else {
             $topLawyers = Lawyer::orderBy('rate', 'desc')->take(10)->pluck('id')->toArray();
             $validated['lawyer_id'] = json_encode($topLawyers); 
@@ -54,10 +52,11 @@ class RequestServiceController  extends Controller
             $uploadedFiles = uploadFiles($request->file('files'), 'requestService_files');
             $validated['files'] = $uploadedFiles;
         }
-    
+        $validated['status'] = 'pending';
+
         $requestService = Request::create($validated);
     
-        $lawyerIds = json_decode($validated['lawyer_id'], true);
+        // $lawyerIds = json_decode($validated['lawyer_id'], true);
         // foreach ($lawyerIds as $lawyerId) {
         //     $notificationService->sendRequestServiceNotificationToLawyer($requestService, $lawyerId);
         // }
@@ -68,7 +67,4 @@ class RequestServiceController  extends Controller
             'data' => $requestService,
         ]);
     }
-    
-    
-
 }
