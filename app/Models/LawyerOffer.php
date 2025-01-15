@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class LawyerOffer extends Model
 {
@@ -16,6 +17,7 @@ class LawyerOffer extends Model
         'message',
         'is_rejected',
         'accepted_by',
+        'status'
     ];
 
     public function request()
@@ -31,5 +33,15 @@ class LawyerOffer extends Model
     public function acceptedBy()
     {
         return $this->belongsTo(User::class, 'accepted_by');
+    }
+
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d M Y, h:i A'); 
+    }
+        
+    public function getUpdatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d M Y, h:i A'); 
     }
 }
