@@ -57,4 +57,15 @@ class Handler extends ExceptionHandler
             //
         });
     }
+    public function render($request, Throwable $exception)
+    {
+        if ($exception instanceof \Illuminate\Validation\ValidationException) {
+            return response()->json([
+                'success' => false,
+                'message' => $exception->errors(),
+            ], 422);
+        }
+
+        return parent::render($request, $exception);
+    }
 }
