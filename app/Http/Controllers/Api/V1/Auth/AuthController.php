@@ -3,24 +3,26 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Models\User;
+use App\Mail\OtpMail;
 use App\Models\Lawyer;
 use App\Models\Report;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Mailable;
+use App\Mail\VerificationMail;
+use Swift_TransportException; 
 use App\Traits\Front\GeneralTrait;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Notifications\SendOtpNotification;
+use App\Http\Requests\Auth\RegisterUserRequest;
+use App\Http\Requests\Auth\RegisterLawyerRequest;
 use App\Http\ServicesLayer\Front\AuthServices\AuthService;
 use App\Http\ServicesLayer\Front\UserServices\UserService;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\DB;
-use Swift_TransportException; 
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use App\Notifications\SendOtpNotification;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Illuminate\Mail\Mailable;
-use App\Mail\OtpMail;
-use App\Mail\VerificationMail;
 
 
 class AuthController extends Controller
@@ -47,30 +49,11 @@ class AuthController extends Controller
         return response()->json(['success' => true, 'data' => $result], 200);
     }
 
-    public function registerUser(Request $request)
+    public function registerUser(RegisterUserRequest $request)
     {
         try {
-            $validatedData = $request->validate([
-                'email' => [
-                    'required',
-                    'email',
-                    function ($attribute, $value, $fail) {
-                        $userExists = \DB::table('users')->where('email', $value)->exists();
-                        $lawyerExists = \DB::table('lawyers')->where('email', $value)->exists();
-    
-                        if ($userExists) {
-                            return $fail('The email is already taken by a user.');
-                        }
-    
-                        if ($lawyerExists) {
-                            return $fail('The email is already taken by a lawyer.');
-                        }
-                    },
-                ],
-                'password' => 'required|min:8|confirmed',
-                'password_confirmation' => 'required|same:password|min:8|max:30',
-            ]);
-    
+            $validatedData = $request->validated(); 
+
             $otpCode = random_int(1000, 9999);
     
             $user = User::create([
@@ -114,58 +97,10 @@ class AuthController extends Controller
     }
     
     
-    public function registerLawyer(Request $request)
+    public function registerLawyer(RegisterLawyerRequest $request)
     {
         try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    function ($attribute, $value, $fail) {
-                        $userExists = \DB::table('users')->where('email', $value)->exists();
-                        $lawyerExists = \DB::table('lawyers')->where('email', $value)->exists();
-    
-                        if ($userExists) {
-                            return $fail('The email is already taken by a user.');
-                        }
-    
-                        if ($lawyerExists) {
-                            return $fail('The email is already taken by a lawyer.');
-                        }
-                    },
-                ],
-                'mobile' => 'required|string|max:255|unique:lawyers,mobile',
-                'title' => 'required|string|max:255',
-                'address' => 'nullable|string|max:255',
-                'linked_in' => 'nullable|string|max:255',
-                'img' => 'nullable|image|mimes:jpeg,png,jpg,webp,webm|max:2048',
-                'photo_union_card' => 'nullable|image|mimes:jpeg,png,jpg,webp,webm|max:2048',
-                'country_id' => 'required|exists:countries,id',
-                'city_id' => 'required|exists:cities,id',
-                'file' => 'nullable|mimes:pdf,doc,docx|max:20000',
-                'services.*' => 'nullable|exists:services,id',
-                'languages.*' => 'required|exists:languages,id',
-                'legal_fields.*' => 'required|exists:legal_fields,id',
-                'password' => 'required|confirmed|min:6|max:30',
-                'password_confirmation' => 'required|same:password|max:30',
-                'type' => 'required|in:1,3',
-                'registration_number' => 'nullable|numeric|unique:lawyers,registration_number',
-                'education' => 'nullable|string|max:255',
-                'medals' => 'nullable|string|max:255',
-                'website_company' => 'nullable|url',
-                'country_id_company' => 'nullable|exists:countries,id',
-                'city_id_company' => 'nullable|exists:cities,id',
-                'linked_in_company' => 'nullable|string|max:255',
-                'address_company' => 'nullable|string|max:255',
-                'photo_office_rent' => 'nullable|image|mimes:jpeg,png,jpg,webp,webm|max:2048',
-                'photo_passport' => 'nullable|image|mimes:jpeg,png,jpg,webp,webm|max:2048',
-                'name_company' => 'nullable|string|max:255',
-                'bio_company' => 'nullable|string',
-                'card_id_img' => 'nullable|image|mimes:jpeg,png,jpg,webp,webm|max:2048',
-            ]);
-    
+            $data = $request->validated();
             if ($request->has('services')) {
                 $data['services'] = json_decode($request->input('services'));
             }
