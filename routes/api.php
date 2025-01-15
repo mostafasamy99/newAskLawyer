@@ -114,6 +114,13 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
 
         Route::get('hire-requests', 'getAllHireRequests');
         Route::get('hire-request/{id}', 'getHireRequestById');
+        Route::get('/get-all-hire-service-requests', 'getSingleLawyerRequestsService');
+        Route::get('/get-all-hire-service-requests/{id}', 'getDataOfSingleLawyerRequestsService');
+        Route::get('/get-all-price-list-service-requests', 'getMultipleLawyerRequestsService');
+        Route::get('/get-all-price-list-service-requests/{id}', 'getDataOfMultipleLawyerRequestsService');
+        Route::get('/platform-services', 'getAllPlatfromServices');
+        Route::get('/platform-services/{id}/lawyers', 'getLawyersWithOffers');
+        Route::get('/get-all/{request_id}/price-list-offers', 'getOffersByRequest');
 
     });
 
