@@ -101,7 +101,6 @@ class AuthController extends Controller
     {
         try {
             $data = $request->validated();
-    
             if ($request->has('services')) {
                 $data['services'] = json_decode($request->input('services'));
             }
