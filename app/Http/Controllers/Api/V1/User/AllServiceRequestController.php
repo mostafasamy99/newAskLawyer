@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use App\Models\Request as RequestModel;
 use App\Models\PlatformService;
+use App\Models\LawyerOffer;
+use Illuminate\Support\Facades\Validator;
+
 use App\Services\NotificationService;
 
 class AllServiceRequestController  extends Controller
@@ -187,5 +190,79 @@ class AllServiceRequestController  extends Controller
             'data' => $platformServices
         ]);
     }
+
+
+
+    public function getOffersByRequest($request_id)
+    {
+        try {
+            $validated = Validator::make(['request_id' => $request_id], [
+                'request_id' => 'required|exists:requests,id',
+            ]);
+    
+            if ($validated->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed.',
+                    'errors' => $validated->errors(),
+                ], 422);
+            }
+    
+            $requestRecord = RequestModel::find($request_id);
+    
+            if ($requestRecord->service_id !== null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Offers can only be retrieved for requests with service_id set to null.',
+                ], 403);
+            }
+    
+            if ($requestRecord->user_id !== auth()->id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are not authorized to view offers for this request.',
+                ], 403);
+            }
+    
+            $perPage = request()->input('per_page', 5); 
+            $order = request()->input('order', 'desc'); 
+    
+            $offers = LawyerOffer::where('request_id', $request_id)
+                ->with('lawyer:id,name,email,mobile,rate,img')
+                ->orderBy('created_at', $order)
+                ->paginate($perPage);
+    
+            $offers->getCollection()->transform(function ($offer) {
+                if ($offer->lawyer && $offer->lawyer->img) {
+                    $offer->lawyer->img = url($offer->lawyer->img);
+                }
+                return $offer;
+            });
+    
+            if ($offers->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No offers found for this request.',
+                    'data' => [],
+                ], 404);
+            }
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Offers retrieved successfully.',
+                'data' => $offers,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    
+    
+    
+
 
 }

@@ -119,6 +119,7 @@ class RequestController  extends Controller
             'user_id' => auth()->id(),
             'rating' => $validated['rating'],
             'message' => $validated['message'],
+            'request_model' =>'App\Models\UserRequest',
         ]);
     
         LawyerRating::create([
