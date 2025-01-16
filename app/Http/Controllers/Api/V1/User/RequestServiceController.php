@@ -9,7 +9,8 @@ use Illuminate\Validation\ValidationException;
 use App\Models\Request as RequestModel;
 use App\Models\Lawyer;
 use App\Models\LawyerOffer;
-
+use App\Models\UserRequestRating;
+use App\Models\LawyerRating;
 use App\Services\NotificationService;
 
 class RequestServiceController  extends Controller
@@ -123,79 +124,79 @@ class RequestServiceController  extends Controller
         }
     }
 
-    // public function ratePriceListRequest(Request $request, $requestId)
-    // {
-    //     $validated = $request->validate([
-    //         'rating' => 'required|integer|min:1|max:5',
-    //         'message' => 'nullable|string',
-    //     ]);
+    public function rateServiceRequest(Request $request, $requestId)
+    {
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'message' => 'nullable|string',
+        ]);
     
-    //     $userRequest = RequestModel::find($requestId);
+        $userRequest = RequestModel::find($requestId);
     
-    //     if (!$userRequest) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'The request ID does not exist.',
-    //         ], 404);
-    //     }
+        if (!$userRequest) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The request ID does not exist.',
+            ], 404);
+        }
     
-    //     if ($userRequest->user_id !== auth()->id()) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'You are not authorized to rate this request.',
-    //         ], 403);
-    //     }
+        if ($userRequest->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorized to rate this request.',
+            ], 403);
+        }
     
-    //     if ($userRequest->status !== 'completed') {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Request must be completed to rate it.',
-    //         ], 400);
-    //     }
+        if ($userRequest->status !== 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Request must be completed to rate it.',
+            ], 400);
+        }
     
-    //     $lawyerId = $userRequest->accepted_by;
-    //     if (!$lawyerId) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'No lawyer is assigned to this request.',
-    //         ], 400);
-    //     }
+        $lawyerId = $userRequest->accepted_by;
+        if (!$lawyerId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No lawyer is assigned to this request.',
+            ], 400);
+        }
     
-    //     $existingRating = UserRequestRating::where('user_request_id', $requestId)
-    //         ->where('user_id', auth()->id())
-    //         ->first();
+        $existingRating = UserRequestRating::where('request_id', $requestId)
+            ->where('user_id', auth()->id())
+            ->first();
     
-    //     if ($existingRating) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'You have already rated this request.',
-    //         ], 400);
-    //     }
+        if ($existingRating) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You have already rated this request.',
+            ], 400);
+        }
     
-    //     UserRequestRating::create([
-    //         'user_request_id' => $requestId,
-    //         'user_id' => auth()->id(),
-    //         'rating' => $validated['rating'],
-    //         'message' => $validated['message'],
-    //         'request_model' =>'App\Models\UserRequest',
-    //     ]);
+        UserRequestRating::create([
+            'request_id' => $requestId,
+            'user_id' => auth()->id(),
+            'rating' => $validated['rating'],
+            'message' => $validated['message'],
+            'request_model' =>'App\Models\Request',
+        ]);
     
-    //     LawyerRating::create([
-    //         'lawyer_id' => $lawyerId,
-    //         'user_id' => auth()->id(),
-    //         'rating' => $validated['rating'],
-    //         'message' => $validated['message'],
-    //     ]);
+        LawyerRating::create([
+            'lawyer_id' => $lawyerId,
+            'user_id' => auth()->id(),
+            'rating' => $validated['rating'],
+            'message' => $validated['message'],
+        ]);
     
-    //     $averageRating = LawyerRating::where('lawyer_id', $lawyerId)->avg('rating');
-    //     Lawyer::where('id', $lawyerId)->update([
-    //         'rate' => round($averageRating, 1),
-    //     ]);
+        $averageRating = LawyerRating::where('lawyer_id', $lawyerId)->avg('rating');
+        Lawyer::where('id', $lawyerId)->update([
+            'rate' => round($averageRating, 1),
+        ]);
     
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Rating submitted successfully, and lawyer rating updated.',
-    //     ]);
-    // }
+        return response()->json([
+            'success' => true,
+            'message' => 'Rating submitted successfully, and lawyer rating updated.',
+        ]);
+    }
     
 }

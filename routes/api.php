@@ -92,6 +92,7 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::controller(RequestServiceController::class)->group(function () {
         Route::post('/request-service', 'saveRequest');
         Route::post('/accept-price-list-offer', 'acceptPriceListOffer');
+        Route::post('/rate-service-request/{requestId}', 'rateServiceRequest');
 
     });
 
@@ -100,13 +101,19 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     });
 
     Route::controller(AllServiceRequestController::class)->group(function () {
-        Route::get('/get-all-hire-service-requests', 'getSingleLawyerRequestsService');
-        Route::get('/get-all-hire-service-requests/{id}', 'getDataOfSingleLawyerRequestsService');
-        Route::get('/get-all-price-list-service-requests', 'getMultipleLawyerRequestsService');
-        Route::get('/get-all-price-list-service-requests/{id}', 'getDataOfMultipleLawyerRequestsService');
+        // Route::get('/get-all-hire-service-requests', 'getSingleLawyerRequestsService');
+        // Route::get('/get-all-hire-service-requests/{id}', 'getDataOfSingleLawyerRequestsService');
+        // Route::get('/get-all-price-list-service-requests', 'getMultipleLawyerRequestsService');
+        // Route::get('/get-all-price-list-service-requests/{id}', 'getDataOfMultipleLawyerRequestsService');
         Route::get('/platform-services', 'getAllPlatfromServices');
         Route::get('/platform-services/{id}/lawyers', 'getLawyersWithOffers');
         Route::get('/get-all/{request_id}/price-list-offers', 'getOffersByRequest');
+        Route::get('price-list-offer/{id}', 'getOfferById');
+        Route::get('price-list-requests', 'getAllPriceListRequests');
+        Route::get('price-list-request/{id}', 'getPriceListRequestById');
+
+        Route::get('hire-requests', 'getAllHireRequests');
+        Route::get('hire-request/{id}', 'getHireRequestById');
 
     });
 
