@@ -15,7 +15,7 @@ class Lawyer extends Authenticatable
 	protected $fillable = [
 		'name', 'email', 'img', 'password', 'union_card', 'title', 'country_id', 'city_id', 'lang_id', 'address', 'mobile', 'linked_in', 'file', 'type',
 		'registration_number', 'education', 'medals', 'memberships', 'disclaimer', 'lang','address_company',
-        'website_company','linked_in_company','city_id_company','country_id_company','office_rent','passport','code','otp_expires_at','rate','name_company','bio_company','card_id_img'
+        'website_company','linked_in_company','city_id_company','country_id_company','office_rent','passport','code','otp_expires_at','rate','score_points','name_company','bio_company','card_id_img'
 	];
     public $timestamps = true;
 
@@ -49,7 +49,7 @@ class Lawyer extends Authenticatable
 			'address' => '', 'password' => '', 'mobile' => '', 'linked_in' => '', 'file' => '', 'type' => '', 'services' => '', 'languages' => '',
 			'legal_fields' => '', 'registration_number' => '', 'education' => '', 'medals' => '', 'memberships' => '', 'disclaimer' => '', 'lang' => '',
 			'address_company' => '', 'website_company' => '', 'linked_in_company' => '', 'city_id_company' => '', 'country_id_company' => '',
-			'office_rent' => '', 'passport' => '', 'code' => ''
+			'office_rent' => '', 'passport' => '', 'code' => '','rate' => '','score_points' => ''
 		];
 	}
 
@@ -163,5 +163,25 @@ class Lawyer extends Authenticatable
 		return $this->hasMany(LawyerAcceptedService::class, 'lawyer_id');
 	}
 	
-	
+	public function calculateScorePoints()
+	{
+		// Requests Table
+		$totalRequests = Request::whereJsonContains('lawyer_id', $this->id)->count();
+		$acceptedRequests = Request::whereJsonContains('lawyer_id', $this->id)->whereNotNull('accepted_by')->count();
+		$requestPercentage = $totalRequests > 0 ? ($acceptedRequests / $totalRequests) * 100 : 0;
+
+		// User Requests Table
+		$totalUserRequests = UserRequest::whereJsonContains('lawyer_id', $this->id)->count();
+		$acceptedUserRequests = UserRequest::whereJsonContains('lawyer_id', $this->id)->whereNotNull('accepted_by')->count();
+		$userRequestPercentage = $totalUserRequests > 0 ? ($acceptedUserRequests / $totalUserRequests) * 100 : 0;
+
+		// Calculate Score Points
+		$scorePoints = ceil(($requestPercentage * 0.7) + ($userRequestPercentage * 0.3));
+
+		// Update score_points column
+		$this->update(['score_points' => $scorePoints]);
+
+		return $scorePoints;
+	}
+
 }

@@ -10,7 +10,7 @@ class RegisterUserRequest extends FormRequest
 {
     public function authorize()
     {
-        return true; // Allow this request for all users
+        return true; 
     }
 
     public function rules()

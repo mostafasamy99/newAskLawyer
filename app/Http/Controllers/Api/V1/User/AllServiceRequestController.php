@@ -158,17 +158,22 @@ class AllServiceRequestController  extends Controller
     
     public function getAllPlatfromServices(Request $request)
     {
-        $perPage = $request->input('per_page', 5); 
-
-        $platformServices = PlatformService::orderBy('created_at', 'desc') 
-            ->paginate($perPage);
-
+        $perPage = $request->input('per_page', 5);
+    
+        $platformServices = PlatformService::orderBy('created_at', 'desc')->paginate($perPage);
+    
+        $platformServices->getCollection()->transform(function ($service) {
+            $service->icon = url($service->icon); 
+            return $service;
+        });
+    
         return response()->json([
             'success' => true,
             'message' => 'Platform services retrieved successfully.',
             'data' => $platformServices
         ]);
     }
+    
 
     public function getOffersByRequest($request_id)
     {

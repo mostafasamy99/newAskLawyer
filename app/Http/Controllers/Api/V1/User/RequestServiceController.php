@@ -78,38 +78,49 @@ class RequestServiceController  extends Controller
             $validated = $request->validate([
                 'offer_id' => 'required|exists:lawyer_offers,id',
             ]);
-
+    
             $offer = LawyerOffer::find($validated['offer_id']);
-
+    
             $requestRecord = RequestModel::find($offer->request_id);
-
             if ($requestRecord->user_id !== auth()->id()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'You are not authorized to accept this offer.',
                 ], 403);
             }
-
-            if ($requestRecord->service_id !== null) {
+    
+            if ($offer->status === 'accepted') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This offer has already been accepted.',
+                ], 400);
+            }
+    
+            if ($requestRecord->status === 'accepted') {
                 return response()->json([
                     'success' => false,
                     'message' => 'This request already has an accepted offer.',
-                ], 403);
+                ], 400);
             }
-
+    
             $requestRecord->update([
                 'status' => 'accepted',
             ]);
-
+    
             $offer->update([
                 'status' => 'accepted',
-                'accepted_by'=>auth()->id(),
+                'accepted_by' => auth()->id(),
             ]);
-
+    
             LawyerOffer::where('request_id', $offer->request_id)
                 ->where('id', '!=', $offer->id)
                 ->update(['status' => 'rejected']);
-
+    
+            $lawyer = $offer->lawyer;
+            if ($lawyer) {
+                $lawyer->calculateScorePoints();
+            }
+    
             return response()->json([
                 'success' => true,
                 'message' => 'Offer accepted successfully.',
@@ -123,6 +134,7 @@ class RequestServiceController  extends Controller
             ], 500);
         }
     }
+    
 
     public function rateServiceRequest(Request $request, $requestId)
     {

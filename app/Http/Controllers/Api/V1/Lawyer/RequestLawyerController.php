@@ -114,7 +114,11 @@ class RequestLawyerController  extends Controller
                 'accepted_by' => $lawyer->id,
             ]);
 
-            $this->notificationService->sendRequestAcceptedNotificationToUser($userRequest);
+            // dd(get_class($lawyer));
+
+            $lawyer->calculateScorePoints();
+            
+            // $this->notificationService->sendRequestAcceptedNotificationToUser($userRequest);
 
             return response()->json([
                 'success' => true,

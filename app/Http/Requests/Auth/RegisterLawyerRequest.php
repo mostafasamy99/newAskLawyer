@@ -12,7 +12,7 @@ class RegisterLawyerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Adjust authorization logic if needed
+        return true; 
     }
 
     /**
