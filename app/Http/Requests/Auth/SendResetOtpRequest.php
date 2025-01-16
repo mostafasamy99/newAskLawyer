@@ -31,6 +31,9 @@ class SendResetOtpRequest extends FormRequest
     {
         return [
             'email.required' => __('The email field is required.'),
+
+
+            
             'email.email' => __('The email must be a valid email address.'),
             'email.exists' => __('No lawyer found with this email address.'),
         ];
