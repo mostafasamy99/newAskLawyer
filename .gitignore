@@ -7,9 +7,7 @@
 /public/admin/assets/images
 /storage/*.key
 /vendor
-.env
 .env.backup
-.env.production
 Homestead.json
 Homestead.yaml
 auth.json
@@ -17,5 +15,5 @@ npm-debug.log
 yarn-error.log
 /.fleet
 /.idea
-/.vscode
 ask-lawyer-76c87-firebase-adminsdk-q7ve0-8f02af4b0d.json
+config.bat

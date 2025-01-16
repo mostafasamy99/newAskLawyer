@@ -19,6 +19,8 @@ class SearchLawyerController  extends Controller
         $locale = app()->getLocale(); 
 
         $arrangeByRate = $request->input('rate', null);
+        $arrangeByScorePoint = $request->input('score_points', null);
+
 
         $lawyersQuery = Lawyer::with(['languages', 'legal_fields' => function ($query) {
             $query->where('is_activate', 1);
@@ -27,6 +29,9 @@ class SearchLawyerController  extends Controller
 
         if ($arrangeByRate !== null) {
             $lawyersQuery->orderBy('rate', 'desc');
+        }
+        if ($arrangeByScorePoint !== null) {
+            $lawyersQuery->orderBy('score_points', 'desc');
         }
 
         $lawyers = $lawyersQuery->get()->map(function ($lawyer) use ($locale) {
