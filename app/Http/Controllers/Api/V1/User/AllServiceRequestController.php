@@ -14,118 +14,98 @@ use App\Services\NotificationService;
 
 class AllServiceRequestController  extends Controller
 {
+    //price list
+
+    public function getAllPriceListRequests()
+    {
+        try {
+            $perPage = request()->input('per_page', 10);
+            $order = request()->input('order', 'desc');
     
-    public function getSingleLawyerRequestsService(Request $request)
-    {
-        $user = auth()->user();
-        try {
-            $validated = $request->validate([
-                'order' => 'nullable|string|in:asc,desc',
-                'per_page' => 'nullable|integer',
+            $requests = RequestModel::select(
+                    'id',
+                    'created_at',
+                    'first_name',
+                    'last_name',
+                    'message',
+                    'user_id',
+                    'lawyer_id',
+                    'status',
+                    'summary',
+                    'accepted_by'
+                )
+                ->whereNull('service_id')
+                ->orderBy('created_at', $order)
+                ->paginate($perPage);
+    
+            if ($requests->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No requests found.',
+                    'data' => [],
+                ], 404);
+            }
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Requests retrieved successfully.',
+                'data' => $requests,
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed.',
-                'errors' => $e->errors(),
-            ], 422);
+                'message' => 'An error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-        $order = $validated['order'] ?? 'desc';
-        $perPage = $validated['per_page'] ?? 5; 
-        $requests = RequestModel::where('user_id', $user->id)
-        ->whereRaw('JSON_LENGTH(lawyer_id) = 1') 
-        ->select('id', 'created_at', 'service_id', 'message', 'summary') 
-        ->with('service:id,name') 
-        ->orderBy('created_at', $order)
-        ->paginate($perPage);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Requests with a single lawyer ID retrieved successfully.',
-            'data' => $requests,
-        ]);
     }
-
-    public function getDataOfSingleLawyerRequestsService(Request $request, $id)
+    
+    public function getPriceListRequestById($id)
     {
-        $user = auth()->user();
         try {
-            $requestData = RequestModel::where('user_id', $user->id)
+            $request = RequestModel::select(
+                    'id',
+                    'created_at',
+                    'first_name',
+                    'last_name',
+                    'message',
+                    'user_id',
+                    'lawyer_id',
+                    'status',
+                    'summary',
+                    'accepted_by',
+                    'files'
+                )
                 ->where('id', $id)
-                ->whereRaw('JSON_LENGTH(lawyer_id) = 1')
-                ->select('id', 'created_at', 'service_id', 'message', 'summary','status')
-                ->with('service:id,name') 
-                ->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                ->whereNull('service_id')
+                ->first();
+    
+            if (!$request) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request not found.',
+                    'data' => [],
+                ], 404);
+            }
+            if ($request->files) {
+                $filePaths = explode(',', $request->files); 
+                $request->files = array_map(function ($filePath) {
+                    return url($filePath); 
+                }, $filePaths);
+            }
             return response()->json([
-                'success' => false,
-                'message' => 'Request not found.',
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Request retrieved successfully.',
-            'data' => $requestData,
-        ]);
-    }
-
-    public function getMultipleLawyerRequestsService(Request $request)
-    {
-        $user = auth()->user();
-        try {
-            $validated = $request->validate([
-                'order' => 'nullable|string|in:asc,desc',
-                'per_page' => 'nullable|integer',
+                'success' => true,
+                'message' => 'Request retrieved successfully.',
+                'data' => $request,
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed.',
-                'errors' => $e->errors(),
-            ], 422);
+                'message' => 'An error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-        $order = $validated['order'] ?? 'desc';
-        $perPage = $validated['per_page'] ?? 5;
-        $requests = RequestModel::where('user_id', $user->id)
-            ->whereRaw('JSON_LENGTH(lawyer_id) > 1') 
-            ->select('id', 'created_at', 'service_id', 'message', 'summary') 
-            ->with('service:id,name') 
-            ->orderBy('created_at', $order)
-            ->paginate($perPage);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Requests with multiple lawyer IDs retrieved successfully.',
-            'data' => $requests,
-        ]);
     }
-
-    public function getDataOfMultipleLawyerRequestsService(Request $request, $id)
-    {
-        $user = auth()->user();
-        try {
-            $requestData = RequestModel::where('user_id', $user->id)
-                ->where('id', $id)
-                ->whereRaw('JSON_LENGTH(lawyer_id) > 1') 
-                ->select('id', 'created_at', 'service_id', 'message', 'summary','status')
-                ->with('service:id,name') 
-                ->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Request not found.',
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Request retrieved successfully.',
-            'data' => $requestData,
-        ]);
-    }
-
-
 
     public function getLawyersWithOffers($id)
     {
@@ -176,7 +156,6 @@ class AllServiceRequestController  extends Controller
         ]);
     }
     
-  
     public function getAllPlatfromServices(Request $request)
     {
         $perPage = $request->input('per_page', 5); 
@@ -190,8 +169,6 @@ class AllServiceRequestController  extends Controller
             'data' => $platformServices
         ]);
     }
-
-
 
     public function getOffersByRequest($request_id)
     {
@@ -260,9 +237,156 @@ class AllServiceRequestController  extends Controller
             ], 500);
         }
     }
-    
-    
-    
+        
+    public function getOfferById($offerId)
+    {
+        try {
+            // Validate the offer ID
+            $validated = Validator::make(['offer_id' => $offerId], [
+                'offer_id' => 'required|exists:lawyer_offers,id',
+            ]);
 
+            if ($validated->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed.',
+                    'errors' => $validated->errors(),
+                ], 422);
+            }
+
+            // Retrieve the offer with the associated lawyer details
+            $offer = LawyerOffer::where('id', $offerId)
+                ->with('lawyer:id,name,email,mobile,rate,img')
+                ->first();
+
+            if (!$offer) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Offer not found.',
+                ], 404);
+            }
+
+            // Modify the lawyer's image URL if it exists
+            if ($offer->lawyer && $offer->lawyer->img) {
+                $offer->lawyer->img = url($offer->lawyer->img);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Offer retrieved successfully.',
+                'data' => $offer,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    //hire employee 
+    public function getAllHireRequests()
+    {
+        try {
+            $perPage = request()->input('per_page', 10);
+            $order = request()->input('order', 'desc');
+    
+            $requests = RequestModel::select(
+                    'id',
+                    'created_at',
+                    'first_name',
+                    'last_name',
+                    'message',
+                    'service_id',
+                    'user_id',
+                    'lawyer_id',
+                    'status',
+                    'summary',
+                    'accepted_by'
+                )
+                ->with(['service' => function ($query) {
+                    $query->select('platform_services.id') 
+                          ->withTranslation(); 
+                }])
+                ->whereNotNull('service_id')
+                ->orderBy('created_at', $order)
+                ->paginate($perPage);
+    
+            if ($requests->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No requests found.',
+                    'data' => [],
+                ], 404);
+            }
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Requests retrieved successfully.',
+                'data' => $requests,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    
+    
+    public function getHireRequestById($id)
+    {
+        try {
+            $request = RequestModel::select(
+                    'id',
+                    'created_at',
+                    'first_name',
+                    'last_name',
+                    'message',
+                    'service_id',
+                    'user_id',
+                    'lawyer_id',
+                    'status',
+                    'summary',
+                    'accepted_by',
+                    'files'
+                )
+                ->with(['service' => function ($query) {
+                    $query->select('platform_services.id')
+                          ->withTranslation(); 
+                }])
+                ->where('id', $id)
+                ->whereNotNull('service_id')
+                ->first();
+    
+            if (!$request) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request not found.',
+                    'data' => [],
+                ], 404);
+            }
+            if ($request->files) {
+                $filePaths = explode(',', $request->files); 
+                $request->files = array_map(function ($filePath) {
+                    return url($filePath); 
+                }, $filePaths);
+            }
+            return response()->json([
+                'success' => true,
+                'message' => 'Request retrieved successfully.',
+                'data' => $request,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    
 
 }

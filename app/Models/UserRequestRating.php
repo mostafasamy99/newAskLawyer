@@ -12,18 +12,19 @@ class UserRequestRating extends Model
 
     protected $fillable = [
         'user_id', 
-        'user_request_id', 
+        'request_id', 
         'rating', 
         'message', 
+        'request_model'
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-    public function userRequest()
+    public function request()
     {
-        return $this->belongsTo(UserRequest::class);
+        return $this->morphTo(null, 'request_model', 'request_id');
     }
     public function getCreatedAtAttribute($value)
     {
