@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Lawyer;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\Auth\OtpCheckRequest;
+use App\Http\Requests\Auth\SendResetOtpRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 
 class ForgetPasswordController extends Controller
 {
 
     //lawyer
     
-    public function sendResetOtpLawyer(Request $request)
+    public function sendResetOtpLawyer(SendResetOtpRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:lawyers,email',
-        ]);
-
         $lawyer = Lawyer::where('email', strtolower(trim($request->email)))->first();
 
         $otp = rand(1000, 9999);
@@ -41,12 +40,10 @@ class ForgetPasswordController extends Controller
             'message' => 'OTP sent to your email.',
         ]);
     }
-    public function ResendResetOtpLawyer(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email|exists:lawyers,email',
-        ]);
 
+
+    public function ResendResetOtpLawyer(SendResetOtpRequest $request)
+    {
         $lawyer = Lawyer::where('email', strtolower(trim($request->email)))->first();
 
         $otp = rand(1000, 9999);
@@ -67,12 +64,8 @@ class ForgetPasswordController extends Controller
         ]);
     }
 
-    public function otp_check_lawyer(Request $request)
+    public function otp_check_lawyer(OtpCheckRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:lawyers,email',
-            'otp' => 'required|numeric',
-        ]);
 
         $lawyer = Lawyer::where('email', strtolower(trim($request->email)))->first();
 
@@ -95,12 +88,10 @@ class ForgetPasswordController extends Controller
     }
 
 
-    public function resetPasswordLawyer(Request $request)
+    public function resetPasswordLawyer(ResetPasswordRequest $request)
     {
-        $validator = \Validator::make($request->all(), [
-            'email' => 'required|email|exists:lawyers,email',
-            'password' => 'required|confirmed|min:8',
-        ]);
+        
+        $validator = $request->validated();
 
         if ($validator->fails()) {
             return response()->json([
@@ -130,11 +121,8 @@ class ForgetPasswordController extends Controller
 
     //user
 
-    public function sendResetOtpUser(Request $request)
+    public function sendResetOtpUser(SendResetOtpRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-        ]);
 
         $user = User::where('email', strtolower(trim($request->email)))->first();
 
@@ -155,7 +143,9 @@ class ForgetPasswordController extends Controller
             'message' => 'OTP sent to your email.',
         ]);
     }
-    public function ResendResetOtpUser(Request $request)
+
+
+    public function ResendResetOtpUser(SendResetOtpRequest $request)
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',
@@ -181,12 +171,8 @@ class ForgetPasswordController extends Controller
         ]);
     }
 
-    public function otp_check_user(Request $request)
+    public function otp_check_user(OtpCheckRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'otp' => 'required|numeric',
-        ]);
 
         $user = User::where('email', strtolower(trim($request->email)))->first();
 
@@ -209,7 +195,7 @@ class ForgetPasswordController extends Controller
         ]);
     }
 
-    public function resetPasswordUser(Request $request)
+    public function resetPasswordUser(ResetPasswordRequest $request)
     {
         $validator = \Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
@@ -241,7 +227,4 @@ class ForgetPasswordController extends Controller
         ]);
     }
 
-
-
- 
 }
