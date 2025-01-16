@@ -170,8 +170,6 @@ class AllServiceRequestController  extends Controller
         ]);
     }
 
-
-
     public function getOffersByRequest($request_id)
     {
         try {

@@ -121,6 +121,12 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
         Route::get('/platform-services', 'getAllPlatfromServices');
         Route::get('/platform-services/{id}/lawyers', 'getLawyersWithOffers');
         Route::get('/get-all/{request_id}/price-list-offers', 'getOffersByRequest');
+        Route::get('price-list-offer/{id}', 'getOfferById');
+        Route::get('price-list-requests', 'getAllPriceListRequests');
+        Route::get('price-list-request/{id}', 'getPriceListRequestById');
+
+        Route::get('hire-requests', 'getAllHireRequests');
+        Route::get('hire-request/{id}', 'getHireRequestById');
 
     });
 
