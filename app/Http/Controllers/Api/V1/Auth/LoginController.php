@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Lawyer;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\Auth\VerifyOtpLawyer;
+use App\Http\Requests\Auth\LoginCheckRequest;
+use App\Http\Requests\Auth\VerifyOtpUser;
 
 class LoginController extends Controller
 {
@@ -23,13 +26,8 @@ class LoginController extends Controller
     /**
      * Handle login for both users and lawyers
      */
-    public function loginCheck(Request $request)
+    public function loginCheck(LoginCheckRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-            'user_type' => 'required|in:1,2', // 1: Lawyer, 2: User
-        ]);
 
         if ($request->user_type == 1) {
             $result = $this->lawyerCheckLogin($request);
@@ -119,13 +117,8 @@ class LoginController extends Controller
         ]);
     }
 
-    public function verifyOtpLawyer(Request $request)
+    public function verifyOtpLawyer(VerifyOtpLawyer $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'otp' => 'required|numeric|digits:4',
-        ]);
-
         try {
             $lawyer = Lawyer::where('email', $request->email)->first();
 
@@ -165,13 +158,8 @@ class LoginController extends Controller
         }
     }
 
-    public function verifyOtpUser(Request $request)
+    public function verifyOtpUser(VerifyOtpUser $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'otp' => 'required|numeric|digits:4',
-        ]);
-
         try {
             $user = User::where('email', $request->email)->first();
 

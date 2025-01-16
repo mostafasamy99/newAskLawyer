@@ -76,6 +76,29 @@ class RegisterLawyerRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.required' => __('The name field is required.'),
+            'name.string' => __('The name must be a string.'),
+            'name.max' => __('The name may not be greater than 255 characters.'),
+            'email.required' => __('The email field is required.'),
+            'email.string' => __('The email must be a string.'),
+            'email.max' => __('The email may not be greater than 255 characters.'),
+            'email.unique' => __('The email has already been taken.'),
+            'mobile.required' => __('The mobile field is required.'),
+            'mobile.string' => __('The mobile must be a string.'),
+            'mobile.max' => __('The mobile may not be greater than 255 characters.'),
+            'mobile.unique' => __('The mobile has already been taken.'),
+            'title.required' => __('The title field is required.'),
+            'title.string' => __('The title must be a string.'),
+            'title.max' => __('The title may not be greater than 255 characters.'),
+            'address.string' => __('The address must be a string.'),
+            'address.max' => __('The address may not be greater than 255 characters.'),
+            'linked_in.string' => __('The linked in must be a string.'),
+            'linked_in.max' => __('The linked in may not be greater than 255 characters.'),
+            'img.image' => __('The img must be an image.'),
+            'img.mimes' => __('The img must be a file of type: jpeg, png, jpg, webp, webm.'),
+            'img.max' => __('The img may not be greater than 2048 kilobytes.'),
+            'photo_union_card.image' => __('The photo union card must be an image.'),
+            'photo_union_card.mimes' => __('The photo union card must be a file of type: jpeg, png, jpg'),
         ];
     }
 }
