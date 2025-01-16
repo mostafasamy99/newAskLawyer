@@ -15,7 +15,7 @@ use App\Services\NotificationService;
 
 class RequestServiceController  extends Controller
 {
-    public function saveRequest(RequestModel $request, NotificationService $notificationService)
+    public function saveRequest(Request $request, NotificationService $notificationService)
     {
         $user = auth()->user();
     
@@ -57,7 +57,7 @@ class RequestServiceController  extends Controller
         }
         $validated['status'] = 'pending';
 
-        $requestService = Request::create($validated);
+        $requestService = RequestModel::create($validated);
     
         // $lawyerIds = json_decode($validated['lawyer_id'], true);
         // foreach ($lawyerIds as $lawyerId) {
